@@ -23,13 +23,6 @@
             <artifactId>jetcd-core</artifactId>
             <version>0.5.3</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-            <version>1.18.30</version>
-        </dependency>
     </dependencies>
 
 </project>

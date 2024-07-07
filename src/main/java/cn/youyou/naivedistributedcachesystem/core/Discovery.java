@@ -6,7 +6,6 @@ import io.etcd.jetcd.KeyValue;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.WatchOption;
 import io.etcd.jetcd.watch.WatchEvent;
-import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -20,7 +19,6 @@ import java.util.stream.Collectors;
  * 集群discovery
  * 集群节点的发现+加入+维护
  */
-@Slf4j
 public class Discovery {
 
     /**
@@ -109,17 +107,18 @@ public class Discovery {
      * 打印topology
      */
     private void printTopology() {
-        log.info("============================================================");
-        log.info("Topology:");
+        System.out.println("============================================================");
+        System.out.println("Topology:");
 
         for (Map.Entry<UUID, Integer> entry : topology.entrySet()) {
-            log.info("   " + entry.getKey() + " -> 127.0.0.1:" + entry.getValue());
+            System.out.println("   " + entry.getKey() + " -> 127.0.0.1:" + entry.getValue());
         }
-        log.info("============================================================");
+        System.out.println("============================================================");
     }
 
     /**
      * 解析etcd的key-value数据，将其加入到topology中
+     *
      * @param kv
      */
     private void add(KeyValue kv) {

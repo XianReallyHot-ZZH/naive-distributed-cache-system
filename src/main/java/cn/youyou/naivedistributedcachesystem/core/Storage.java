@@ -1,7 +1,6 @@
 package cn.youyou.naivedistributedcachesystem.core;
 
 import cn.youyou.naivedistributedcachesystem.request.RebalanceRequest;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,7 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 本地缓存的实现类
  */
-@Slf4j
 public class Storage {
 
     // 本地节点id
@@ -32,37 +30,42 @@ public class Storage {
 
     /**
      * 获取缓存
+     *
      * @param key
      * @return
      */
     public String get(String key) {
-        log.info("[Storage] get method, key:{}", key);
+        System.out.println("[Storage] get method, key:" + key);
         // 根据key计算对应的分区id，进而获取对应的分区数据，最后获取对应的value
         return cache.get(mapper.partition(key)).get(key);
     }
 
     /**
      * 添加缓存
+     *
      * @param key
      * @param value
      */
     public void put(String key, String value) {
-        log.info("[Storage] put method, key:{}, value:{}", key, value);
+        System.out.println("[Storage] put method, key:" + key + ", value:" + value);
         // 根据key计算对应的分区id，进而获取对应的分区数据，最后添加对应的value
         cache.get(mapper.partition(key)).put(key, value);
     }
 
     /**
      * 分区数据接收,触发分区对应数据的覆盖
+     *
      * @param partitionId
      * @param partitionData
      */
     public void onPartitionReceived(int partitionId, Map<String, String> partitionData) {
+        System.out.println("[Storage-rebalance] receive partitionId:" + partitionId);
         cache.put(partitionId, partitionData);
     }
 
     /**
      * 检测到集群节点发生变化，触发分区数据重映射，进而引发data exchange（数据交换）, 即rebalance
+     * server端需要用到
      */
     public void partitionExchange() {
         // 获取当前分区对应的所有节点，分区-节点-映射关系
@@ -79,10 +82,12 @@ public class Storage {
                 Map<String, String> partitionData = cache.remove(partition);
                 if (partitionData != null) {
                     try {
+                        System.out.println("[Storage] partition:" + partition + ", rebalance to remote node: " + node.getId() + ", remote port: " + node.getAddress().getPort());
                         comm.execute(new RebalanceRequest(partition, partitionData), node.getAddress());
                     } catch (Exception e) {
                         // 先简单报错，后续再优化
-                        log.error("[Storage] rebalance error, data exchange failed, partition:{}, node(remote):{}", partition, node, e);
+                        System.err.println("[Storage] rebalance error, data exchange failed, partition:" + partition + ", node(remote):" + node);
+                        e.printStackTrace();
                     }
                 }
             }
@@ -90,7 +95,7 @@ public class Storage {
 
         List<Integer> partitions = new ArrayList<>(cache.keySet());
         Collections.sort(partitions);
-        log.info("[Storage] partition exchange completed, local partitions:{}", partitions);
+        System.out.println("[Storage] partition exchange completed, local partitions:" + partitions);
 
     }
 
